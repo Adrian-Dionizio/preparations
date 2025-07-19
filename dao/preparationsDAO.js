@@ -1,19 +1,41 @@
+
 const fs = require('fs');
 const path = require('path');
 
-const filesPrep = path.join(__dirname, "..", "arquivos");
+const preparationsPath = path.join(__dirname, '../arquivos/preparations.json');
 
-fs.readdir(filesPrep, (err, files) => {
-  if (err) {
-    console.error('Erro ao ler a pasta:', err);
-    return;
-  }
+function getPreparations() {
+    try {
+        const data = fs.readFileSync(preparationsPath, 'utf8');
+        return JSON.parse(data);
+    } catch (err) {
+        console.error('Erro ao ler preparations.json:', err);
+        return [];
+    }
+}
 
-  // Filtrar apenas arquivos (ignora pastas)
-  const onlyfiles = files.filter(file => {
-    return fs.statSync(path.join(filesPrep, file)).isFile();
-  });
 
-  console.log(onlyfiles);
-});
+function savePreparations(preparations) {
+    try {
+        fs.writeFileSync(preparationsPath, JSON.stringify(preparations, null, 2), 'utf8');
+        return true;
+    } catch (err) {
+        console.error('Erro ao salvar preparations.json:', err);
+        return false;
+    }
+}
+
+function addPreparation(newPreparation) {
+    const preparations = getPreparations();
+    preparations.push(newPreparation);
+    return savePreparations(preparations);
+}
+
+function removePreparation(preparationToRemove) {
+    let preparations = getPreparations();
+    preparations = preparations.filter(item => item !== preparationToRemove);
+    return savePreparations(preparations);
+}
+
+module.exports = { getPreparations, savePreparations, addPreparation, removePreparation };
 
